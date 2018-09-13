@@ -1,0 +1,6 @@
+[package]
+name = "libuefi-alloc"
+version = "0.1.0"
+authors = ["xuserwhat <quickn@cityarts.cf>"]
+
+[dependencies]
