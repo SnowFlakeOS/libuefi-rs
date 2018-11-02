@@ -1,0 +1,9 @@
+[package]
+name = "libuefi-misc"
+version = "0.1.0"
+authors = ["quickn"]
+edition = "2018"
+
+[dependencies]
+libuefi-rs = { path = "../" }
+libuefi-alloc = { path = "../libuefi-alloc" }

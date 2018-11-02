@@ -5,12 +5,38 @@
 //   https://opensource.org/licenses/BSD-3-Clause)
 // =======================================================================
 
-#[macro_use] pub mod macros;
 pub mod guid; 
-pub mod status;
+pub mod memory;
+pub mod time;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Event(pub usize); // Currently, unused
+//* Use from external library *//
+use core::ffi::c_void;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Handle(pub usize);
+//* Use from local library *//
+pub use self::guid::Guid;
+pub use self::memory::{PhysAddress, VirtAddress, MemoryType, MemoryDescriptor};
+pub use self::time::Time;
+
+pub enum Void {}
+
+impl Void {
+    pub fn new() -> PoolPointer<Self> {
+        0 as PoolPointer<Self>
+    }
+
+    pub fn from_addr(addr: u64) -> PoolPointer<Self> {
+        addr as PoolPointer<Self>
+    }
+}
+
+pub type PoolPointer<T> = *mut T;
+
+pub type EventNotifyFcn = efi_fcn!{ fn(Event, *mut Void) -> () };
+
+#[derive(Clone, Copy)]
+#[repr(transparent)]
+pub struct Event(*mut c_void);
+
+#[derive(Clone, Copy)]
+#[repr(transparent)]
+pub struct Handle(*mut c_void);

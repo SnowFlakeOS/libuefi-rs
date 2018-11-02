@@ -2,10 +2,11 @@
 
 //* Use from external library *//
 use core::ops;
-use core::result;
+
+//* Use from local library *//
+use super::{Result, Completion};
 
 //* Constants & Types *//
-pub type Result<T> = result::Result<T, Status>;
 const HIGHEST_BIT_SET: usize = !((!0_usize) >> 1);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -72,7 +73,9 @@ impl Status {
         F: FnOnce() -> T,
     {
         if self.is_success() {
-            Ok(f())
+            Ok(Completion::Success(f()))
+        } else if self.is_warning() {
+            Ok(Completion::Warning(f(), self))
         } else {
             Err(self)
         }
@@ -87,7 +90,7 @@ impl Into<Result<()>> for Status {
 }
 
 impl ops::Try for Status {
-    type Ok = ();
+    type Ok = Completion<()>;
     type Error = Status;
 
     fn into_result(self) -> Result<()> {

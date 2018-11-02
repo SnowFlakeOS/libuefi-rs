@@ -3,5 +3,9 @@ name = "libuefi-rs"
 version = "0.1.0"
 authors = ["xuserwhat <quickn@cityarts.cf>"]
 
-[dependencies]
-libuefi-alloc = { path = "./libuefi-alloc" }
+
+[workspace]
+members = [
+    "libuefi-alloc",
+    "libuefi-misc",
+]

@@ -5,19 +5,13 @@
 //   https://opensource.org/licenses/BSD-3-Clause)
 // =======================================================================
 
+#![no_std]
 #![feature(try_trait)]
+#![feature(try_from)]
+#![feature(panic_info_message)]
 
-extern crate core;
-extern crate libuefi_alloc;
-
+#[macro_use] mod macros;
 pub mod tables;
-#[macro_use] pub mod utility;
+pub mod utility;
 pub mod protocols;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+pub mod status;

@@ -147,3 +147,9 @@ impl fmt::Display for Guid {
         Ok(())
     }
 }
+
+impl Default for Guid {
+    fn default() -> Self {
+        Guid(0, 0, 0, [0, 0, 0, 0, 0, 0, 0, 0])
+    }
+}

@@ -6,7 +6,7 @@
 // =======================================================================
 
 //* Use from local library *//
-use utility::status::{Status, Result};
+use status::{Result, Status};
 
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
@@ -21,16 +21,16 @@ pub struct TextOutputMode {
 
 #[repr(C)]
 pub struct TextOutput {
-    reset: efi_fcn! { fn(&TextOutput, bool) -> Status },
-    output_string: efi_fcn! { fn(&TextOutput, *const u16) -> Status },
-    test_string: efi_fcn! { fn(&TextOutput, *const u16) -> Status },
-    query_mode: efi_fcn! { fn(&TextOutput, usize, &mut usize, &mut usize) -> Status },
-    set_mode: efi_fcn! { fn(&TextOutput, usize) -> Status },
-    set_attribute: efi_fcn! { fn(&TextOutput, usize) -> Status },
-    clear_screen: efi_fcn! { fn(&TextOutput) -> Status },
-    set_cursor_position: efi_fcn! { fn(&TextOutput, usize, usize) -> Status },
-    enable_cursor: efi_fcn! { fn(&TextOutput, bool) -> Status },
-    pub mode: &'static TextOutputMode,
+    reset: efi_fcn! { fn(&mut TextOutput, bool) -> Status },
+    output_string: efi_fcn! { fn(&mut TextOutput, *const u16) -> Status },
+    test_string: efi_fcn! { fn(&mut TextOutput, *const u16) -> Status },
+    query_mode: efi_fcn! { fn(&mut TextOutput, usize, &mut usize, &mut usize) -> Status },
+    set_mode: efi_fcn! { fn(&mut TextOutput, usize) -> Status },
+    set_attribute: efi_fcn! { fn(&mut TextOutput, usize) -> Status },
+    clear_screen: efi_fcn! { fn(&mut TextOutput) -> Status },
+    set_cursor_position: efi_fcn! { fn(&mut TextOutput, usize, usize) -> Status },
+    enable_cursor: efi_fcn! { fn(&mut TextOutput, bool) -> Status },
+    mode: &'static TextOutputMode,
 }
 
 impl TextOutput {
@@ -38,8 +38,15 @@ impl TextOutput {
         unsafe { (self.reset)(self, extended).into() }
     }
 
-    pub fn output_string(&mut self, string: *const u16) -> Result<()> {
-        unsafe { (self.output_string)(self, string).into() }
+    pub fn output_string(&mut self, string: &str) -> Result<()> {
+        let mut status = Status::Success;
+        for c in string.chars() {
+            status = unsafe { (self.output_string)(self, [c as u16, 0].as_ptr()) };
+            if c == '\n' {
+                status = unsafe { (self.output_string)(self, ['\r' as u16, 0].as_ptr()) };
+            }
+        }
+        status.into()
     }
 
     pub fn test_string(&mut self, string: *const u16) -> bool {
@@ -53,8 +60,7 @@ impl TextOutput {
 
     pub fn query_mode(&mut self, index: usize) -> Result<(usize, usize)> {
         let (mut columns, mut rows) = (0, 0);
-        unsafe { (self.query_mode)(self, index, &mut columns, &mut rows) };
-        Ok((columns, rows))
+        unsafe { (self.query_mode)(self, index, &mut columns, &mut rows).into_with(|| (columns, rows)) }
     }
 
     pub fn set_mode(&mut self, index: usize) -> Result<()> {
@@ -76,5 +82,9 @@ impl TextOutput {
 
     pub fn enable_cursor(&mut self, visible: bool) -> Result<()> {
         unsafe { (self.enable_cursor)(self, visible).into() }
+    }
+
+    pub fn mode(&self) -> &'static TextOutputMode {
+        (self.mode)
     }
 }

@@ -5,14 +5,21 @@
 //   https://opensource.org/licenses/BSD-3-Clause)
 // =======================================================================
 
-pub mod console;
-pub mod device_path;
-pub mod graphics_output;
-pub mod file_system;
+//* Use from external library *//
+use core::fmt::{self, Write};
 
 //* Use from local library *//
-use utility::Guid;
+use crate::console;
 
-pub trait Protocol {
-    const GUID: Guid;
+pub struct Stdout;
+
+impl Write for Stdout {
+    fn write_str(&mut self, string: &str) -> Result<(), fmt::Error> {
+        let _ = unsafe { console().output_string(string) };
+        Ok(())
+    }
+}
+
+pub fn _print(args: fmt::Arguments) {
+    Stdout.write_fmt(args).unwrap();
 }

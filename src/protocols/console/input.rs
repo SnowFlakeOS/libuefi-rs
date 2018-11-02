@@ -10,7 +10,7 @@ use core::mem;
 
 //* Use from local library *//
 use utility::Event;
-use utility::status::{Status, Result};
+use status::{Result, Status};
 
 #[derive(Clone, Copy, Debug, Default)]
 #[repr(C)]
@@ -33,7 +33,6 @@ impl TextInput {
 
     pub fn read_key_stroke(&mut self) -> Result<TextInputKey> {
         let mut input = unsafe { mem::uninitialized() };
-        unsafe { (self.read_key_stroke)(self, &mut input)? };
-        Ok(input)
+        unsafe { (self.read_key_stroke)(self, &mut input).into_with(|| input) }
     }
 }
